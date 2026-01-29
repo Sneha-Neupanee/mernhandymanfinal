@@ -8,7 +8,9 @@ import { authenticateToken, authenticateAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Initialize default admin (if not exists)
+/* ============================
+   INIT DEFAULT ADMIN
+============================ */
 router.post('/init', async (req, res) => {
   try {
     const adminExists = await Admin.findOne({ username: 'admin' });
@@ -29,7 +31,9 @@ router.post('/init', async (req, res) => {
   }
 });
 
-// Get all providers
+/* ============================
+   GET ALL PROVIDERS
+============================ */
 router.get('/providers', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
     const providers = await ServiceProvider.find()
@@ -42,11 +46,13 @@ router.get('/providers', authenticateToken, authenticateAdmin, async (req, res) 
   }
 });
 
-// Verify/Reject provider
+/* ============================
+   VERIFY / REJECT PROVIDER
+============================ */
 router.put('/providers/:providerId/verify', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
     const { providerId } = req.params;
-    const { action } = req.body; // 'verify' or 'reject'
+    const { action } = req.body;
 
     if (!['verify', 'reject'].includes(action)) {
       return res.status(400).json({ message: 'Action must be "verify" or "reject"' });
@@ -69,7 +75,9 @@ router.put('/providers/:providerId/verify', authenticateToken, authenticateAdmin
   }
 });
 
-// Get all bookings
+/* ============================
+   ALL BOOKINGS
+============================ */
 router.get('/bookings', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
     const bookings = await Booking.find()
@@ -82,35 +90,31 @@ router.get('/bookings', authenticateToken, authenticateAdmin, async (req, res) =
   }
 });
 
-// Get statistics
+/* ============================
+   STATISTICS (UPDATED WITH PROFIT)
+============================ */
 router.get('/statistics', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
     const now = new Date();
     const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
 
-    // Total Service Providers
     const totalProviders = await ServiceProvider.countDocuments();
 
-    // Total Appointers (unique phone numbers in bookings)
     const uniqueAppointers = await Booking.distinct('customerPhone');
     const totalAppointers = uniqueAppointers.length;
 
-    // Total Appointments
     const totalAppointments = await Booking.countDocuments();
 
-    // Appointments completed in past month
     const completedLastMonth = await Booking.countDocuments({
       status: 'completed',
       completedAt: { $gte: oneMonthAgo }
     });
 
-    // Service providers verified in past month
     const verifiedLastMonth = await ServiceProvider.countDocuments({
       verificationStatus: 'verified',
       createdAt: { $gte: oneMonthAgo }
     });
 
-    // Additional stats
     const pendingProviders = await ServiceProvider.countDocuments({ verificationStatus: 'pending' });
     const verifiedProviders = await ServiceProvider.countDocuments({ verificationStatus: 'verified' });
     const rejectedProviders = await ServiceProvider.countDocuments({ verificationStatus: 'rejected' });
@@ -118,6 +122,12 @@ router.get('/statistics', authenticateToken, authenticateAdmin, async (req, res)
     const pendingBookings = await Booking.countDocuments({ status: 'pending' });
     const confirmedBookings = await Booking.countDocuments({ status: 'confirmed' });
     const completedBookings = await Booking.countDocuments({ status: 'completed' });
+
+    /* ⭐ NEW: TOTAL PLATFORM PROFIT */
+    const profitResult = await Booking.aggregate([
+      { $group: { _id: null, totalProfit: { $sum: "$platformProfit" } } }
+    ]);
+    const totalPlatformProfit = profitResult[0]?.totalProfit || 0;
 
     res.json({
       providers: {
@@ -136,12 +146,43 @@ router.get('/statistics', authenticateToken, authenticateAdmin, async (req, res)
         confirmed: confirmedBookings,
         completed: completedBookings,
         completedLastMonth
-      }
+      },
+      /* ⭐ include in response */
+      totalProfit: totalPlatformProfit
     });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-export default router;
+/* ============================
+   NEW: TOTAL PROFIT PAGE
+============================ */
+router.get("/profit", authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const bookings = await Booking.find({ status: "completed" });
 
+    const totalProfit = bookings.reduce((sum, b) => {
+      return sum + (b.platformProfit || 0);
+    }, 0);
+
+    res.json({
+      totalProfit,
+      count: bookings.length,
+      bookings: bookings.map(b => ({
+        id: b._id,
+        serviceType: b.serviceType,
+        pricePaid: b.pricePaidByCustomer,
+        profit: b.platformProfit,
+        completedAt: b.completedAt
+      }))
+    });
+
+  } catch (err) {
+    console.error("Profit fetch error:", err);
+    res.status(500).json({ message: "Failed to fetch profit data" });
+  }
+});
+
+export default router;

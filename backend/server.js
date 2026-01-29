@@ -7,6 +7,8 @@ import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import trainingRoutes from './routes/training.js';
+
 
 // Import routes
 import authRoutes from './routes/auth.js';
@@ -186,6 +188,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/match', matchRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/training', trainingRoutes);
+
 
 // Health check
 app.get('/api/health', (req, res) => {

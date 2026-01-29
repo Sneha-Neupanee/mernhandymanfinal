@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import './Home.css'
 
@@ -9,12 +9,13 @@ const images = [
 ]
 
 const Home = () => {
+  const navigate = useNavigate()
   const [currentImage, setCurrentImage] = useState(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % images.length)
-    }, 4000) // show each image for ~4s (includes fade)
+    }, 4000)
     return () => clearInterval(interval)
   }, [])
 
@@ -72,28 +73,35 @@ const Home = () => {
         </div>
       </div>
 
-      {/* SERVICES SECTION */}
+      {/* SERVICES SECTION (UPDATED WITH BIG IMAGES) */}
       <div className="home-services">
         <div className="container">
           <h2>Our Services in Kathmandu</h2>
+
           <div className="services-grid">
             {[
-              ['🔧', 'Plumbing', 'Expert plumbing services for leaks, installations, and repairs'],
-              ['🪚', 'Carpentry', 'Professional carpentry work for furniture and fixtures'],
-              ['🎨', 'Painting', 'Interior and exterior painting services'],
-              ['🧱', 'Tiling', 'Floor and wall tiling installation and repair'],
-              ['⚡', 'Minor Electrical', 'Electrical repairs and installations'],
-              ['🏗️', 'Masonry', 'Brickwork and masonry services'],
-              ['🏠', 'Roofing', 'Roof repairs and maintenance'],
-              ['🔨', 'General Handyman', 'All-around handyman services for your home'],
-            ].map(([icon, title, desc], i) => (
+              ['/src/assets/services/plumbing.png', 'Plumbing', 'Expert plumbing services for leaks, installations, and repairs'],
+              ['/src/assets/services/carpentry.png', 'Carpentry', 'Professional carpentry work for furniture and fixtures'],
+              ['/src/assets/services/painting.png', 'Painting', 'Interior and exterior painting services'],
+              ['/src/assets/services/tiling.png', 'Tiling', 'Floor and wall tiling installation and repair'],
+              ['/src/assets/services/electrical.png', 'Minor Electrical', 'Electrical repairs and installations'],
+              ['/src/assets/services/masonry.png', 'Masonry', 'Brickwork and masonry services'],
+              ['/src/assets/services/roofing.png', 'Roofing', 'Roof repairs and maintenance'],
+              ['/src/assets/services/handyman.png', 'General Handyman', 'All-around handyman services for your home'],
+            ].map(([img, title, desc], i) => (
               <div key={i} className="service-card">
-                <div className="service-icon">{icon}</div>
+
+                {/* BIG IMAGE BOX */}
+                <div className="service-image-box">
+                  <img src={img} alt={title} className="service-image" />
+                </div>
+
                 <h3>{title}</h3>
                 <p>{desc}</p>
               </div>
             ))}
           </div>
+
         </div>
       </div>
 
@@ -115,6 +123,19 @@ const Home = () => {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* TRAINING SECTION */}
+      <div className="training-wrapper">
+        <div
+          className="training-card"
+          onClick={() => navigate('/training')}
+        >
+          <h3 className="training-title">Get Training</h3>
+          <p className="training-sub">
+            Become a skilled professional. Choose from 9 hands-on technical trainings.
+          </p>
         </div>
       </div>
     </div>

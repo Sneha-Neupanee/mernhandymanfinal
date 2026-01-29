@@ -1,0 +1,79 @@
+.training-page {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  
+  .training-header {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: white;
+  }
+  
+  .training-desc {
+    text-align: center;
+    color: white;
+    margin-bottom: 25px;
+  }
+  
+  .training-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  
+  .training-option {
+    padding: 18px;
+    border-radius: 14px;
+    background: #f8f8ff;
+    border: 1px solid #d7dbff;
+    cursor: pointer;
+    transition: 0.25s ease;
+  }
+  
+  .training-option.active {
+    background: linear-gradient(135deg, #1A2560, #2B3A8C);
+    color: white;
+    border-color: #2B3A8C;
+    box-shadow: 0 8px 20px rgba(43, 58, 140, 0.3);
+  }
+  
+  .training-form {
+    margin-top: 35px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 22px;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid #dfe3ff;
+  }
+  
+  .training-form input,
+  .training-form textarea {
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccd2ff;
+    font-size: 0.95rem;
+  }
+  
+  .training-form textarea {
+    min-height: 90px;
+  }
+  
+  .training-form button {
+    padding: 12px;
+    background: linear-gradient(135deg, #1A2560, #2B3A8C);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.25s ease;
+  }
+  
+  .training-form button:hover {
+    transform: scale(1.03);
+  }
+  

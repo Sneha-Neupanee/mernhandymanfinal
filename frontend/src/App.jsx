@@ -12,6 +12,8 @@ import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar'
 import NotificationSystem from './components/NotificationSystem'
+import Training from "./pages/Training";
+
 
 function App() {
   return (
@@ -51,6 +53,8 @@ function App() {
             }
           />
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/training" element={<Training />} />
+
         </Routes>
       </Router>
     </AuthProvider>

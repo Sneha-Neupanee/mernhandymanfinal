@@ -6,7 +6,9 @@ import { authenticateToken, authenticateAppointer } from '../middleware/auth.js'
 
 const router = express.Router();
 
-// Create new booking
+/* ============================
+   CREATE NEW BOOKING
+============================ */
 router.post('/create', upload.single('serviceRequestPhoto'), async (req, res) => {
   try {
     const { 
@@ -15,31 +17,26 @@ router.post('/create', upload.single('serviceRequestPhoto'), async (req, res) =>
       password, 
       serviceType, 
       preferredDateTime,
-      serviceLocation // {latitude, longitude, addressText}
+      serviceLocation
     } = req.body;
 
     if (!customerName || !customerPhone || !password || !serviceType || !preferredDateTime) {
       return res.status(400).json({ message: 'All required fields must be provided' });
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Handle file upload
     const serviceRequestPhotoUrl = req.file 
       ? `/uploads/${req.file.filename}` 
       : '';
 
-    // Parse serviceLocation if provided
     let parsedLocation = null;
     if (serviceLocation) {
       try {
-        parsedLocation = typeof serviceLocation === 'string' 
-          ? JSON.parse(serviceLocation) 
+        parsedLocation = typeof serviceLocation === 'string'
+          ? JSON.parse(serviceLocation)
           : serviceLocation;
-      } catch (e) {
-        // Invalid JSON, ignore
-      }
+      } catch (e) {}
     }
 
     const booking = new Booking({
@@ -70,12 +67,15 @@ router.post('/create', upload.single('serviceRequestPhoto'), async (req, res) =>
         serviceLocation: booking.serviceLocation
       }
     });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Get appointer dashboard (all their bookings)
+/* ============================
+   GET ALL BOOKINGS FOR APPOINTER
+============================ */
 router.get('/appointer', authenticateToken, authenticateAppointer, async (req, res) => {
   try {
     const bookings = await Booking.find({ customerPhone: req.user.phone })
@@ -83,12 +83,15 @@ router.get('/appointer', authenticateToken, authenticateAppointer, async (req, r
       .sort({ createdAt: -1 });
 
     res.json(bookings);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Mark booking as completed
+/* ============================
+   OLD COMPLETE ROUTE (UNTOUCHED)
+============================ */
 router.put('/:bookingId/complete', authenticateToken, authenticateAppointer, async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -99,7 +102,7 @@ router.put('/:bookingId/complete', authenticateToken, authenticateAppointer, asy
     }
 
     if (booking.customerPhone !== req.user.phone) {
-      return res.status(403).json({ message: 'Not authorized to complete this booking' });
+      return res.status(403).json({ message: 'Not authorized' });
     }
 
     if (booking.status !== 'confirmed') {
@@ -111,12 +114,67 @@ router.put('/:bookingId/complete', authenticateToken, authenticateAppointer, asy
     await booking.save();
 
     res.json({ message: 'Booking marked as completed', booking });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Get single booking details
+/* ============================
+   ⭐ FIXED COMPLETE-WITH-PRICE ROUTE ⭐
+============================ */
+router.put('/:bookingId/complete-with-price', authenticateToken, authenticateAppointer, async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    // Accept both pricePaid or price
+    const price = Number(req.body.pricePaid || req.body.price);
+
+    // Strong validation
+    if (!req.body.pricePaid && !req.body.price) {
+      return res.status(400).json({ message: 'Valid payment amount is required' });
+    }
+
+    if (isNaN(price) || price <= 0) {
+      return res.status(400).json({ message: 'Valid payment amount is required' });
+    }
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    if (booking.customerPhone !== req.user.phone) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    if (booking.status !== 'confirmed') {
+      return res.status(400).json({ message: 'Only confirmed bookings can be completed with price' });
+    }
+
+    booking.pricePaidByCustomer = price;
+    booking.platformProfit = Math.round(price * 0.10);
+    booking.status = 'completed';
+    booking.completedAt = new Date();
+    booking.canReview = true;
+
+    await booking.save();
+
+    res.json({
+      message: 'Booking completed and payment saved successfully',
+      booking
+    });
+
+  } catch (error) {
+    console.error("❌ complete-with-price ERROR:", error);
+    res.status(500).json({ message: 'Server error while completing booking with price' });
+  }
+});
+
+/* ============================
+   GET SINGLE BOOKING
+============================ */
 router.get('/:bookingId', authenticateToken, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.bookingId)
@@ -126,7 +184,6 @@ router.get('/:bookingId', authenticateToken, async (req, res) => {
       return res.status(404).json({ message: 'Booking not found' });
     }
 
-    // Check authorization
     if (req.user.role === 'appointer' && booking.customerPhone !== req.user.phone) {
       return res.status(403).json({ message: 'Not authorized' });
     }
@@ -136,12 +193,15 @@ router.get('/:bookingId', authenticateToken, async (req, res) => {
     }
 
     res.json(booking);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Add additional service details (photos, description)
+/* ============================
+   ADD ADDITIONAL DETAILS
+============================ */
 router.put('/:bookingId/additional-details', authenticateToken, authenticateAppointer, upload.array('photos', 5), async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -157,43 +217,32 @@ router.put('/:bookingId/additional-details', authenticateToken, authenticateAppo
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    // Handle photo uploads
-    const photoUrls = req.files 
-      ? req.files.map(file => `/uploads/${file.filename}`)
-      : [];
+    const photoUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
 
-    // Update additional details
     if (!booking.additionalDetails) {
-      booking.additionalDetails = {
-        photos: [],
-        description: '',
-        updatedAt: null
-      };
+      booking.additionalDetails = { photos: [], description: '', updatedAt: null };
     }
 
-    booking.additionalDetails.photos = [
-      ...booking.additionalDetails.photos,
-      ...photoUrls
-    ];
-    
-    if (description) {
-      booking.additionalDetails.description = description;
-    }
-    
+    booking.additionalDetails.photos = [...booking.additionalDetails.photos, ...photoUrls];
+    if (description) booking.additionalDetails.description = description;
+
     booking.additionalDetails.updatedAt = new Date();
     await booking.save();
 
     res.json({ message: 'Additional details updated', booking });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Update provider status (on-route, arrived, working, etc.)
+/* ============================
+   PROVIDER STATUS UPDATE
+============================ */
 router.put('/:bookingId/provider-status', authenticateToken, async (req, res) => {
   try {
     const { bookingId } = req.params;
-    const { providerStatus } = req.body; // 'on-route', 'arrived', 'working', etc.
+    const { providerStatus } = req.body;
 
     if (!['pending', 'accepted', 'on-route', 'arrived', 'working', 'completed'].includes(providerStatus)) {
       return res.status(400).json({ message: 'Invalid provider status' });
@@ -205,7 +254,6 @@ router.put('/:bookingId/provider-status', authenticateToken, async (req, res) =>
       return res.status(404).json({ message: 'Booking not found' });
     }
 
-    // Verify user is the assigned provider
     if (req.user.role !== 'provider' || booking.assignedProviderId?.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized' });
     }
@@ -213,7 +261,6 @@ router.put('/:bookingId/provider-status', authenticateToken, async (req, res) =>
     booking.providerStatus = providerStatus;
     await booking.save();
 
-    // Emit status update via Socket.IO if available
     const io = req.app.get('io');
     if (io) {
       io.to(`booking-${bookingId}`).emit('provider-status-update', {
@@ -223,10 +270,10 @@ router.put('/:bookingId/provider-status', authenticateToken, async (req, res) =>
     }
 
     res.json({ message: 'Provider status updated', booking });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
 export default router;
-
