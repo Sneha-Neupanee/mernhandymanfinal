@@ -2,11 +2,21 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import './Home.css'
 
-const images = [
-  '/src/assets/images/service1.png',
-  '/src/assets/images/service2.png',
-  '/src/assets/images/service3.png',
-]
+// IMPORT YOUR IMAGES
+import service1 from '../assets/images/service1.png'
+import service2 from '../assets/images/service2.png'
+import service3 from '../assets/images/service3.png'
+
+import plumbing from '../assets/services/plumbing.png'
+import carpentry from '../assets/services/carpentry.png'
+import painting from '../assets/services/painting.png'
+import tiling from '../assets/services/tiling.png'
+import electrical from '../assets/services/electrical.png'
+import masonry from '../assets/services/masonry.png'
+import roofing from '../assets/services/roofing.png'
+import handyman from '../assets/services/handyman.png'
+
+const images = [service1, service2, service3] // Use the imports
 
 const Home = () => {
   const navigate = useNavigate()
@@ -80,14 +90,14 @@ const Home = () => {
 
           <div className="services-grid">
             {[
-              ['/src/assets/services/plumbing.png', 'Plumbing', 'Expert plumbing services for leaks, installations, and repairs'],
-              ['/src/assets/services/carpentry.png', 'Carpentry', 'Professional carpentry work for furniture and fixtures'],
-              ['/src/assets/services/painting.png', 'Painting', 'Interior and exterior painting services'],
-              ['/src/assets/services/tiling.png', 'Tiling', 'Floor and wall tiling installation and repair'],
-              ['/src/assets/services/electrical.png', 'Minor Electrical', 'Electrical repairs and installations'],
-              ['/src/assets/services/masonry.png', 'Masonry', 'Brickwork and masonry services'],
-              ['/src/assets/services/roofing.png', 'Roofing', 'Roof repairs and maintenance'],
-              ['/src/assets/services/handyman.png', 'General Handyman', 'All-around handyman services for your home'],
+              [plumbing, 'Plumbing', 'Expert plumbing services for leaks, installations, and repairs'],
+              [carpentry, 'Carpentry', 'Professional carpentry work for furniture and fixtures'],
+              [painting, 'Painting', 'Interior and exterior painting services'],
+              [tiling, 'Tiling', 'Floor and wall tiling installation and repair'],
+              [electrical, 'Minor Electrical', 'Electrical repairs and installations'],
+              [masonry, 'Masonry', 'Brickwork and masonry services'],
+              [roofing, 'Roofing', 'Roof repairs and maintenance'],
+              [handyman, 'General Handyman', 'All-around handyman services for your home'],
             ].map(([img, title, desc], i) => (
               <div key={i} className="service-card">
 
