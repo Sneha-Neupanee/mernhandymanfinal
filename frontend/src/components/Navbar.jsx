@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import './Navbar.css'
+import logo from '../assets/logo.png' // 👈 Import the logo
 
 const Navbar = () => {
   const { user, logout } = useAuth()
@@ -17,7 +18,7 @@ const Navbar = () => {
         {/* Left Section — Logo + Brand */}
         <Link to="/" className="navbar-brand">
           <img
-            src="/src/assets/logo.png" // 👈 place your logo here (adjust path as needed)
+            src={logo} // 👈 Use the imported variable
             alt="K-Handyman Logo"
             className="navbar-logo"
           />
