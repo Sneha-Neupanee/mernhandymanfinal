@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import api from '../utils/api'
+import api, { API_ORIGIN } from '../utils/api'
 import ReviewModal from '../components/ReviewModal'
 import ChatWindow from '../components/ChatWindow'
 import { showNotification } from '../components/NotificationSystem'
@@ -160,7 +160,7 @@ const AppointerDashboard = () => {
 
                   {booking.serviceRequestPhotoUrl && (
                     <img 
-                      src={`http://localhost:5000${booking.serviceRequestPhotoUrl}`} 
+                      src={`${API_ORIGIN}${booking.serviceRequestPhotoUrl}`} 
                       alt="Service Request" 
                       className="service-photo"
                     />

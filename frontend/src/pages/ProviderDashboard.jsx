@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import api from '../utils/api'
+import api, { API_ORIGIN } from '../utils/api'
 import ChatWindow from '../components/ChatWindow'
 import MapLocationPicker from '../components/MapLocationPicker'
 import { showNotification } from '../components/NotificationSystem'
@@ -126,7 +126,7 @@ const ProviderDashboard = () => {
               <div className="profile-card">
                 {provider.profilePhotoUrl && (
                   <img
-                    src={`http://localhost:5000${provider.profilePhotoUrl}`}
+                    src={`${API_ORIGIN}${provider.profilePhotoUrl}`}
                     alt="Profile"
                     className="profile-photo"
                   />
@@ -181,7 +181,7 @@ const ProviderDashboard = () => {
                             <p><strong>Preferred Date/Time:</strong> {new Date(booking.preferredDateTime).toLocaleString()}</p>
                             {booking.serviceRequestPhotoUrl && (
                               <img
-                                src={`http://localhost:5000${booking.serviceRequestPhotoUrl}`}
+                                src={`${API_ORIGIN}${booking.serviceRequestPhotoUrl}`}
                                 alt="Service Request"
                                 className="service-photo"
                               />

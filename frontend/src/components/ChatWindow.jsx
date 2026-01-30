@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { io } from 'socket.io-client'
 import { useAuth } from '../context/AuthContext'
-import api from '../utils/api'
+import api, { API_ORIGIN } from '../utils/api'
 import './ChatWindow.css'
 
 /**
@@ -38,7 +38,9 @@ const ChatWindow = ({ bookingId, booking }) => {
     if (!token) return
 
     // Connect to Socket.IO server
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    const socketUrl =
+      import.meta.env.VITE_SOCKET_URL ||
+      API_ORIGIN
     const socketConnection = io(socketUrl, {
       auth: { token },
       transports: ['websocket', 'polling'],
@@ -190,7 +192,7 @@ const ChatWindow = ({ bookingId, booking }) => {
           <div className="chat-avatar">
             {user.role === 'appointer' && booking?.assignedProviderId?.profilePhotoUrl ? (
               <img 
-                src={`http://localhost:5000${booking.assignedProviderId.profilePhotoUrl}`} 
+                src={`${API_ORIGIN}${booking.assignedProviderId.profilePhotoUrl}`} 
                 alt="Provider"
               />
             ) : (

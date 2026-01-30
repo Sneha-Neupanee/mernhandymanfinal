@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api from '../utils/api'
+import api, { API_ORIGIN } from '../utils/api'
 import MapLocationPicker from '../components/MapLocationPicker'
 import { showNotification } from '../components/NotificationSystem'
 import './FormPage.css'
@@ -184,7 +184,7 @@ const AppointerBooking = () => {
                   <div className="provider-info">
                     {provider.profilePhotoUrl && (
                       <img 
-                        src={`http://localhost:5000${provider.profilePhotoUrl}`} 
+                        src={`${API_ORIGIN}${provider.profilePhotoUrl}`} 
                         alt={provider.name}
                         className="provider-photo"
                       />

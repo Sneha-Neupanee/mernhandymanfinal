@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import api from '../utils/api'
+import api, { API_ORIGIN } from '../utils/api'
 import './Dashboard.css'
 
 /* ⭐ CHART IMPORTS */
@@ -273,7 +273,7 @@ const AdminDashboard = () => {
                       <div className="provider-header">
                         {provider.profilePhotoUrl && (
                           <img 
-                            src={`http://localhost:5000${provider.profilePhotoUrl}`} 
+                            src={`${API_ORIGIN}${provider.profilePhotoUrl}`} 
                             alt={provider.name}
                             className="provider-photo"
                           />
